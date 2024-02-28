@@ -1,5 +1,11 @@
 from pathlib import Path
 
 DATA = {
-    'dataset': '../data/dataset',
+    'input': Path('../data/input_data.txt'),
+    'train': Path('../data/train_data.pt'),
+    'test': Path('../data/test_data.pt')
 }
+
+MODEL = {
+
+} 
