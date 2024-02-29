@@ -17,9 +17,4 @@ if __name__ == "__main__":
 
     print(f"First 200 character of the text:\n{text[:200]}")
 
-    # get the unique characters in the dataset
-    chars = sorted(list(set(text)))
-    vocab_size = len(chars)
-    print(f"Vocab size of the text: {vocab_size}")
-
     print("Finished data import...")
