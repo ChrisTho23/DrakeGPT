@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from model_component import Head, MultiHeadAttention, Block, ResidualBlock, ResidualNormDropBlock
+from model_component import Head, MultiHeadAttention, Block, ResidualBlock, ResidualBlock2
 
 class BigramLM(nn.Module):
-
     def __init__(self, vocab_size):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
@@ -219,7 +218,7 @@ class BlocksLM(nn.Module):
 
 
 class ResidualBlocksLM(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, context_length, num_heads):
+    def __init__(self, vocab_size, embedding_dim, context_length, num_heads, num_layers):
         super().__init__()
         self.context_length = context_length
         self.token_embedding_table = nn.Embedding(
@@ -231,9 +230,7 @@ class ResidualBlocksLM(nn.Module):
             embedding_dim
         )
         self.blocks = nn.Sequential(
-            ResidualBlock(embedding_dim, num_heads, context_length), 
-            ResidualBlock(embedding_dim, num_heads, context_length), 
-            ResidualBlock(embedding_dim, num_heads, context_length) 
+            *[ResidualBlock(embedding_dim, num_heads, context_length) for _ in range(num_layers)]
         )
         self.lm_head = nn.Linear(
             embedding_dim, 
@@ -290,7 +287,7 @@ class TransformerLM(nn.Module):
             embedding_dim
         )
         self.blocks = nn.Sequential(
-            *[ResidualNormDropBlock(embedding_dim, num_heads, context_length, dropout) for _ in range(num_layers)]
+            *[ResidualBlock2(embedding_dim, num_heads, context_length, dropout) for _ in range(num_layers)]
         )
         self.ln_f = nn.LayerNorm(embedding_dim)
         self.lm_head = nn.Linear(
