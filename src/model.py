@@ -5,27 +5,59 @@ from torch.nn import functional as F
 from model_component import Head, MultiHeadAttention, Block, ResidualBlock, ResidualBlock2
 
 class BigramLM(nn.Module):
+    """Bigram language model. Predicts the next token based on the previous token.
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+
+    Attributes:
+        token_embedding_table (nn.Embedding): Lookup table for token embeddings. 
+        Embedding size is equal to the embedding dimension.
+    """
     def __init__(self, vocab_size):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         logits = self.token_embedding_table(idx) # (B,T,C)
 
         if targets is None:
             loss = None
         else:
             B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
-            loss = F.cross_entropy(logits, targets)
+            logits = logits.view(B*T, C) # (B*T, C)
+            targets = targets.view(B*T) # (B*T)
+            loss = F.cross_entropy(logits, targets) # scalar
 
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
             # get the predictions
             logits, loss = self(idx)
@@ -41,6 +73,24 @@ class BigramLM(nn.Module):
 
 
 class SingleHeadAttentionLM(nn.Module):
+    """Language model consisting out of a single-head self-attention head followed by a feed-forward lyer. 
+    Predicts the next characters based attribute-weighted sum of the value embeddings of previous character.
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+        embedding_dim (int): Dimension of the character embeddings
+        context_length (int): Length of the context window
+        head_size (int): Size of the sigle-attention head
+
+    Attributes:
+        context_length (int): Length of the context window.
+        token_embedding_table (nn.Embedding): Lookup table for characters embeddings. 
+        Embedding size is equal to the embedding dimension.
+        position_embedding_table (nn.Embedding): Lookup table for position embeddings.
+        Embedding size is equal to the embedding dimension.
+        sa_head (Head): Single self-attention head.
+        lm_head (nn.Linear): Feed-forward layer.
+    """
     def __init__(self, vocab_size, embedding_dim, context_length, head_size):
         super().__init__()
         self.context_length = context_length
@@ -59,7 +109,20 @@ class SingleHeadAttentionLM(nn.Module):
         )
 
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         B, T = idx.shape
 
         token_embeddings = self.token_embedding_table(idx) # (B,T,C)
@@ -79,7 +142,17 @@ class SingleHeadAttentionLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
             # crop idx to the context length
             idx_cond = idx[:, -self.context_length:]
@@ -97,6 +170,26 @@ class SingleHeadAttentionLM(nn.Module):
 
 
 class MultiHeadAttentionLM(nn.Module):
+    """Language model consisting out of a multi-head self-attention head followed by a feed-forward lyer. 
+    Predicts the next characters based attribute-weighted sum of the value embeddings of previous character.
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+        embedding_dim (int): Dimension of the character embeddings
+        context_length (int): Length of the context window
+        head_size (int): Size of the sigle-attention head
+        num_heads (int): Number of single self-attention heads
+
+    Attributes:
+        context_length (int): Length of the context window.
+        token_embedding_table (nn.Embedding): Lookup table for characters embeddings. 
+        Embedding size is equal to the embedding dimension.
+        position_embedding_table (nn.Embedding): Lookup table for position embeddings.
+        Embedding size is equal to the embedding dimension.
+        sa_head (Head): Multi-self-attention head. Consists of num_heads single self-attention heads.
+        Head size of single self-attention laers is initialized as head_size//num_heads.
+        lm_head (nn.Linear): Feed-forward layer.
+    """
     def __init__(self, vocab_size, embedding_dim, context_length, head_size, num_heads):
         super().__init__()
         self.context_length = context_length
@@ -120,7 +213,20 @@ class MultiHeadAttentionLM(nn.Module):
         )
 
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         B, T = idx.shape
 
         token_embeddings = self.token_embedding_table(idx) # (B,T,C)
@@ -140,7 +246,17 @@ class MultiHeadAttentionLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
             # crop idx to the context length
             idx_cond = idx[:, -self.context_length:]
@@ -158,7 +274,27 @@ class MultiHeadAttentionLM(nn.Module):
 
 
 class BlocksLM(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, context_length, num_heads):
+    """Language model of multiple sequential blocks consisting of a multi-head self-attention head followed by a 
+    feed-forward layer each and a feed-forward layer. 
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+        embedding_dim (int): Dimension of the character embeddings
+        context_length (int): Length of the context window
+        num_heads (int): Number of single self-attention heads
+        num_layers (int): Number of layer of blocks
+
+    Attributes:
+        context_length (int): Length of the context window.
+        token_embedding_table (nn.Embedding): Lookup table for characters embeddings. 
+        Embedding size is equal to the embedding dimension.
+        position_embedding_table (nn.Embedding): Lookup table for position embeddings.
+        Embedding size is equal to the embedding dimension.
+        blocks (nn.Sequential): Sequence of blocks. Each block consists of a multi-head self-attention head
+        followed by a feed-forward layer.
+        lm_head (nn.Linear): Feed-forward layer.
+    """
+    def __init__(self, vocab_size, embedding_dim, context_length, num_heads, num_layers):
         super().__init__()
         self.context_length = context_length
         self.token_embedding_table = nn.Embedding(
@@ -170,9 +306,7 @@ class BlocksLM(nn.Module):
             embedding_dim
         )
         self.blocks = nn.Sequential(
-            Block(embedding_dim, context_length, num_heads), 
-            Block(embedding_dim, context_length, num_heads), 
-            Block(embedding_dim, context_length, num_heads) 
+            *[Block(embedding_dim, context_length, num_heads) for _ in range(num_layers)]
         )
         self.lm_head = nn.Linear(
             embedding_dim, 
@@ -180,7 +314,20 @@ class BlocksLM(nn.Module):
         )
 
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         B, T = idx.shape
 
         token_embeddings = self.token_embedding_table(idx) # (B,T,C)
@@ -200,7 +347,17 @@ class BlocksLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
             # crop idx to the context length
             idx_cond = idx[:, -self.context_length:]
@@ -218,6 +375,26 @@ class BlocksLM(nn.Module):
 
 
 class ResidualBlocksLM(nn.Module):
+    """Language model of multiple sequential blocks with residual connections consisting of a multi-head 
+    self-attention head followed by a feed-forward layer each and a feed-forward layer. 
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+        embedding_dim (int): Dimension of the character embeddings
+        context_length (int): Length of the context window
+        num_heads (int): Number of single self-attention heads
+        num_layers (int): Number of layer of residual blocks
+
+    Attributes:
+        context_length (int): Length of the context window.
+        token_embedding_table (nn.Embedding): Lookup table for characters embeddings. 
+        Embedding size is equal to the embedding dimension.
+        position_embedding_table (nn.Embedding): Lookup table for position embeddings.
+        Embedding size is equal to the embedding dimension.
+        blocks (nn.Sequential): Sequence of resudual blocks. Each block consists of a multi-head self-attention 
+        head with residual connections followed by a feed-forward layer.
+        lm_head (nn.Linear): Feed-forward layer.
+    """
     def __init__(self, vocab_size, embedding_dim, context_length, num_heads, num_layers):
         super().__init__()
         self.context_length = context_length
@@ -238,7 +415,20 @@ class ResidualBlocksLM(nn.Module):
         )
 
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         B, T = idx.shape
 
         token_embeddings = self.token_embedding_table(idx) # (B,T,C)
@@ -258,9 +448,19 @@ class ResidualBlocksLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
-            # crop idx to the context length
+            # crop idx to the context length (needed for residual connections)
             idx_cond = idx[:, -self.context_length:]
             # get the predictions
             logits, loss = self(idx_cond)
@@ -275,6 +475,28 @@ class ResidualBlocksLM(nn.Module):
         return idx
 
 class TransformerLM(nn.Module):
+    """Language model of multiple sequential blocks with residual connections consisting of a multi-head 
+    self-attention head followed by a feed-forward layer each and a feed-forward layer. All self-attention
+    block include feed-forward layer upon completion of the attention mechanism. All components include layer
+    normalization and dropout layer.
+
+    Args:
+        vocab_size (int): Size of the vocabulary
+        embedding_dim (int): Dimension of the character embeddings
+        context_length (int): Length of the context window
+        num_heads (int): Number of single self-attention heads
+        num_layers (int): Number of layer of residual blocks
+
+    Attributes:
+        context_length (int): Length of the context window.
+        token_embedding_table (nn.Embedding): Lookup table for characters embeddings. 
+        Embedding size is equal to the embedding dimension.
+        position_embedding_table (nn.Embedding): Lookup table for position embeddings.
+        Embedding size is equal to the embedding dimension.
+        blocks (nn.Sequential): Sequence of resudual blocks. Each block consists of a multi-head self-attention 
+        head with residual connections followed by a feed-forward layer.
+        lm_head (nn.Linear): Feed-forward layer.
+    """
     def __init__(self, vocab_size, embedding_dim, context_length, num_heads, num_layers, dropout):
         super().__init__()
         self.context_length = context_length
@@ -295,9 +517,21 @@ class TransformerLM(nn.Module):
             vocab_size
         )
 
-
     def forward(self, idx, targets=None):
-        # idx and targets are both (B,T) tensor of integers
+        """Forward pass of the model.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            where B is the batch size and T is the length of the input sequence.
+            targets (torch.Tensor, optional): Tensor containing batch of target sequences of shape (B, T)
+            where B is the batch size, T is the length of the target sequence. Defaults to None.
+
+        Returns:
+            logits (torch.Tensor): Tensor containing the logits of the model for predicition of the
+            the T targets for each of the B sequences.
+            loss (float): Cross-entroyp loss of the model for predicition of the the T targets for each 
+            of the B sequences. If targets is None, loss is None.
+        """
         B, T = idx.shape
 
         token_embeddings = self.token_embedding_table(idx) # (B,T,C)
@@ -317,9 +551,19 @@ class TransformerLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+        """Generates max_new_tokens tokens based on the input idx.
+
+        Args:
+            idx (torch.Tensor): Tensor containing batch of input sequences of shape (B, T)
+            that will be used as the context for generating the next character.
+            max_new_tokens (int): Number of characters to generate.
+
+        Returns:
+            torch.Tensor: Tensor containing the generated sequence of tokens 
+            of shape (B, T+max_new_tokens).
+        """
         for _ in range(max_new_tokens):
-            # crop idx to the context length
+            # crop idx to the context length (needed for residual connections)
             idx_cond = idx[:, -self.context_length:]
             # get the predictions
             logits, loss = self(idx_cond)

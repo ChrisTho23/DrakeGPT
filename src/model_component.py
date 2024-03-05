@@ -142,7 +142,6 @@ class Block(nn.Module):
     feed-forward layer. The multi-head self-attention layer and the feed-forward layer are applied consecutively
     to the input sequence.
 
-
     Args:
         embedding_dim (int): The embedding dimension of each element of the input sequence
         context_length (int): The length of the input sequence
