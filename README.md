@@ -17,21 +17,18 @@ The project is built using Python and PyTorch. We use Poetry for dependency mana
 
 First, you will have to clone the repository locally.
 ```bash
-Copy code
 git clone https://github.com/ChrisTho23/myfirstGPT
 cd myfirstGPT
 ```
 
 Then, install dependencies using Poetry:
 ```bash
-Copy code
 poetry install
 ```
 
 Finally, you will have to run the [./src/data.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder. We use a tiny
 dataset containing Shakespearean text for the model training. Find the data [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt)
 ```bash
-Copy code
 poetry run python data.py
 ```
 
@@ -41,7 +38,6 @@ To train a model, run the [train.py]() script with the desired model type. For e
 the BigramLM model run:
 
 ```bash
-Copy code
 poetry run python train.py --model BigramLM
 ```
 
