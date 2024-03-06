@@ -1,8 +1,9 @@
 import torch
 from torch.optim import AdamW
-import numpy as np
+import argparse
+import os
 
-from config import DATA, MODEL, PARAMS, SCALE_PARAMS, TRAIN
+from config import DATA, MODEL_DIR, PARAMS, SCALE_PARAMS, TRAIN
 from preprocessing import get_mapper, get_batch
 from model import (
     BigramLM, SingleHeadAttentionLM, MultiHeadAttentionLM, 
@@ -27,11 +28,34 @@ def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch
     model.train()
     return eval
 
+def get_model_configs(params: dict, vocab_size: int):
+    model_config = {
+        "BigramLM": {"vocab_size": vocab_size},
+        "SingleHeadAttentionLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
+                                 "context_length": params["context_length"], "head_size": params["head_size"]
+        },
+        "MultiHeadAttentionLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
+                                "context_length": params["context_length"], "head_size": params["head_size"],
+                                "num_heads": params["num_heads"]
+        },
+        "BlocksLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
+                    "context_length": params["context_length"], "num_heads": params["num_heads"],
+                    "num_layers": params["num_layers"],
+        },
+        "ResidualBlocksLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
+                            "context_length": params["context_length"], "num_heads": params["num_heads"],
+                            "num_layers": params["num_layers"],
+        },
+        "TransformerLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
+                         "context_length": params["context_length"], "num_heads": params["num_heads"],
+                         "num_layers": params["num_layers"],
+        }, 
+    }
+    return model_config
+
 if __name__ == "__main__":
     torch.manual_seed(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    PARAMS = SCALE_PARAMS
 
     # read data
     with open(DATA["input"], 'r', encoding='utf-8') as f:
@@ -42,20 +66,40 @@ if __name__ == "__main__":
 
     encode, decode, vocab_size = get_mapper(text)
 
-    # Create bigram model
-    model = TransformerLM(
-        vocab_size, PARAMS["embedding_dim"], 
-        PARAMS["context_length"], PARAMS["num_heads"],
-        PARAMS["num_layers"], PARAMS["dropout"]
-    )
-    model.to(device)
+    # Argument parsing
+    parser = argparse.ArgumentParser(description="Train a language model")
+    parser.add_argument("--model", type=str, default="TransformerLM", help="Model to train")
+    parser.add_argument("--scale", type=bool, default=False, help="Train scaled model")
+
+    args = parser.parse_args()
+
+    if args.scale:
+        PARAMS = SCALE_PARAMS
+
+    # get model class
+    model_class = {
+        "BigramLM": BigramLM,
+        "SingleHeadAttentionLM": SingleHeadAttentionLM,
+        "MultiHeadAttentionLM": MultiHeadAttentionLM,
+        "BlocksLM": BlocksLM,
+        "ResidualBlocksLM": ResidualBlocksLM,
+        "TransformerLM": TransformerLM
+    }.get(args.model, TransformerLM)
+
+    # get model config
+    model_configs = get_model_configs(params=PARAMS, vocab_size=vocab_size)
+    model_config = model_configs.get(args.model, model_configs["TransformerLM"])
+
+    # create model
+    model = model_class(**model_config).to(device)
+
 
     # create a PyTorch optimizer
     optimizer = AdamW(model.parameters(), lr=PARAMS["learning_rate"])
 
     model.train()
 
-    print("--- Training bigram model ---")
+    print(f"--- Training {args.model} ---")
 
     for iter in range(TRAIN["iters"]):
         # Get batch of training data
@@ -70,15 +114,15 @@ if __name__ == "__main__":
         optimizer.step()
 
         # every once in a while evaluate the loss on train and val sets
-        if iter % TRAIN["eval_interval"] == 0:
+        if (iter + 1) % TRAIN["eval_interval"] == 0:
             losses = evaluate_loss(
                 train_data, val_data, model, TRAIN["eval_iters"], 
                 PARAMS["context_length"], PARAMS["batch_size"]
             )
-            print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+            print(f"step {iter + 1}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
 
     # Inference
-    print("--- Inference ---")
+    print(f"--- Predicting 100 characters with {args.model} ---")
 
     model.eval()
 
@@ -87,7 +131,9 @@ if __name__ == "__main__":
     print(pred)
 
     # Save model
-    torch.save(model.state_dict(), MODEL["transformer_scale"])
+    model_filename = f"{args.model}.pt"
+    model_path = os.path.join(MODEL_DIR, model_filename)
+    torch.save(model.state_dict(), model_path)
 
     
 

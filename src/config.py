@@ -6,16 +6,7 @@ DATA = {
     'val': Path('../data/val_data.pt')
 }
 
-MODEL = {
-    'bigram': Path('../model/bigram.pt'),
-    'single_head': Path('../model/single_head_attention.pt'),
-    'multi_head': Path('../model/multi_head_attention.pt'),
-    'multi_head_net': Path('../model/multi_head_attention_net.pt'),
-    'blocks': Path('../model/blocks.pt'),
-    'residual_blocks': Path('../model/residual_blocks.pt'),
-    'transformer': Path('../model/transformer.pt'),
-    'transformer_scale': Path('../model/transformer_scale.pt')
-} 
+MODEL_DIR = Path('../model')
 
 PARAMS = {
     'context_length': 8,
@@ -39,7 +30,7 @@ SCALE_PARAMS = {
 }
 
 TRAIN = {
-    'iters': 5000,
+    'iters': 10000,
     'eval_iters': 200,
     'eval_interval': 500
 }
