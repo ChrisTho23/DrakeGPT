@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 # Data files
-data/
+data/*
+!data/.gitkeep
 
 # Distribution / packaging
 .Python
