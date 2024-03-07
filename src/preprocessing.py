@@ -50,6 +50,11 @@ def get_batch(data, context_length, batch_size, device):
 
 if __name__ == "__main__":
     torch.manual_seed(42)
+    # Set device
+    device = torch.device(
+        "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
+    )
+    print(f"Using device: {device}")
 
     # read data
     with open(DATA["input"], 'r', encoding='utf-8') as f:
@@ -69,7 +74,7 @@ if __name__ == "__main__":
     # Example batch
     context_length = 8
     batch_size = 4
-    x_train, y_train = get_batch(train_data, context_length, batch_size)
+    x_train, y_train = get_batch(train_data, context_length, batch_size, device)
     print(f"Input:\n{x_train}\nTarget:\n{y_train}")
 
     # Save tensors
