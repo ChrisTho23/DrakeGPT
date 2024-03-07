@@ -12,7 +12,7 @@ from model import (
 
 @torch.no_grad()
 def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch_size, device):
-    eval = {}
+    eval_loss = {}
     datasets = [train_data, val_data]
     model.eval()
     for data in datasets:
@@ -22,11 +22,11 @@ def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch
             logits, loss = model(x, y)
             losses[iter] = loss.item()
         if torch.equal(data, train_data):
-            eval["train"] = losses.mean()
+            eval_loss["train"] = losses.mean()
         else:
-            eval["val"] = losses.mean()
+            eval_loss["val"] = losses.mean()
     model.train()
-    return eval
+    return eval_loss
 
 def get_model_configs(params: dict, vocab_size: int):
     model_config = {
@@ -139,6 +139,3 @@ if __name__ == "__main__":
     model_filename = f"{args.model}.pt"
     model_path = os.path.join(MODEL_DIR, model_filename)
     torch.save(model.state_dict(), model_path)
-
-    
-

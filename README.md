@@ -26,10 +26,11 @@ Then, install dependencies using Poetry:
 poetry install
 ```
 
-Finally, you will have to run the [./src/data.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder. We use a tiny
+Finally, you will have to run the [./src/data.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) and [./src/preprocessing.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) scripts consecutively to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny
 dataset containing Shakespearean text for the model training. Find the data [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt)
 ```bash
 poetry run python data.py
+poetry run python preprocessing.py
 ```
 
 ## Usage
