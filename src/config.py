@@ -24,6 +24,7 @@ SCALE_PARAMS = {
     'batch_size': 64,
     'learning_rate': 3e-4,
     'embedding_dim': 384,
+    'head_size': 64,
     'num_heads': 6,
     'num_layers': 6,
     'dropout': 0.2,

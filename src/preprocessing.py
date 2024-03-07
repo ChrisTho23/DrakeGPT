@@ -4,6 +4,16 @@ from sklearn.model_selection import train_test_split
 from config import DATA
 
 def get_mapper(text):
+    """Get encode, mapper, decode mapper, and vocabulary size for a given text.
+
+    Args:
+        text (str): The text to be processed.
+
+    Returns:
+        encode: A function that takes a string and returns a list of integers.
+        decode: A function that takes a list of integers and returns a string.
+        vocab_size: The size of the vocabulary.
+    """
     vocab = sorted(list(set(text)))
 
     vocab_size = len(vocab)
@@ -18,11 +28,24 @@ def get_mapper(text):
 
     return encode, decode, vocab_size
 
-def get_batch(data, context_length, batch_size):
+def get_batch(data, context_length, batch_size, device):
+    """Get a batch of data. Randomly selects a block of data with batch_size batches 
+    of length context_length each. Writes the input and target data to the device.
+
+    Args:
+        data (torch.Tensor): The input data.
+        context_length (int): The length of the context.
+        batch_size (int): The batch size.
+        device (torch.device): The device to use.
+
+    Returns:
+        torch.Tensor: The input data.
+        torch.Tensor: The target data.
+    """
     # generate a small batch of data of inputs x and targets y
     ix = torch.randint(len(data) - context_length, (batch_size,)) # (B, CL)
-    x = torch.stack([data[i:i+context_length] for i in ix])
-    y = torch.stack([data[i+1:i+context_length+1] for i in ix])
+    x = torch.stack([data[i:i+context_length] for i in ix]).to(device)
+    y = torch.stack([data[i+1:i+context_length+1] for i in ix]).to(device)
     return x, y
 
 if __name__ == "__main__":
