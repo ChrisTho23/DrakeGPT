@@ -1,4 +1,4 @@
-# myfirstGPT: A repository to iteratively build and understand generative pre-trained transformer (GPT)
+# DrakeGPT: A repository to iteratively build and understand generative pre-trained transformer (GPT)
 
 TODO: Compare model performance; Add quanitzation (1 ternary bit) for final model
 
@@ -12,13 +12,13 @@ This repository is inspired by Deepmind's [Attention Is All You Need](https://ar
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-Prerequisites
+### Prerequisites
 The project is built using Python and PyTorch. We use Poetry for dependency management. 
 
 First, you will have to clone the repository locally.
 ```bash
-git clone https://github.com/ChrisTho23/myfirstGPT
-cd myfirstGPT
+git clone https://github.com/ChrisTho23/DrakeGPT
+cd DrakeGPT
 ```
 
 Then, install dependencies using Poetry:
@@ -26,16 +26,28 @@ Then, install dependencies using Poetry:
 poetry install
 ```
 
-Finally, you will have to run the [./src/data.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) and [./src/preprocessing.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) scripts consecutively to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny
-dataset containing Shakespearean text for the model training. Find the data [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt)
+All following scripts will have to be run from the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) folder to make sure the relative paths defined in [./src/config.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/config.py) work correctly. Access the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) file like so:
 ```bash
-poetry run python data.py
-poetry run python preprocessing.py
+cd src/
+```
+
+In this repository, the Drake lyrics, included in this [dataset of song lyrics](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset) that have been uploaded to Kaggle, are used. Thus, we need to access Kaggle’s public API to download the dataset. For this, one needs to authenticate in Kaggle using an API token. If you have not done so, follow these steps to authenticate: 
+
+1. If not done already, create an account on [kaggle.com](https://www.kaggle.com)
+2. Go to the 'Account' tab of your user profile on the Kaggle website. Click on 'Create New API Token'. This triggers the download of `kaggle.json`, a file containing your API credentials.
+3. Place the `kaggle.json`file with your API credentials somewhere your application can access them.
+3.1 For Kaggle CLI: On Linux, OSX, and other UNIX-based operating systems, place the token at `~/.kaggle/kaggle.json`.On Windows, place it at C:\Users\<Windows-username>\.kaggle\kaggle.json. If the token is not in these directories, the CLI tool will raise an error. So, move the kaggle.json from your Downloads to the appropriate folder.
+3.2 For direct Kaggle API usage: The location of `kaggle.json` is flexible as long as your application can access it at runtime.
+4. For more details and troubleshooting, visit the [official Kaggle API documentation](https://github.com/Kaggle/kaggle-api#api-credentials).
+
+Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny dataset from Kaggle containing lyrics of Drake song text for model training. Find the data [here](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset).
+```bash
+poetry run python setup.py
 ```
 
 ## Usage
 
-To train a model, run the [train.py]() script with the desired model type. For example to train
+To train a model, run the [train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script with the desired model type. For example to train
 the BigramLM model run:
 
 ```bash

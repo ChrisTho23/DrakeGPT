@@ -2,6 +2,8 @@ import torch
 from torch.optim import AdamW
 import argparse
 import os
+import wandb
+from torch.optim.lr_scheduler import CyclicLR
 
 from config import DATA, MODEL_DIR, PARAMS, SCALE_PARAMS, TRAIN
 from preprocessing import get_mapper, get_batch
@@ -14,7 +16,6 @@ from model import (
 def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch_size, device):
     eval_loss = {}
     datasets = [train_data, val_data]
-    model.eval()
     for data in datasets:
         losses = torch.zeros(eval_iters)
         for iter in range(eval_iters):
@@ -25,7 +26,6 @@ def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch
             eval_loss["train"] = losses.mean()
         else:
             eval_loss["val"] = losses.mean()
-    model.train()
     return eval_loss
 
 def get_model_configs(params: dict, vocab_size: int):
@@ -61,7 +61,6 @@ if __name__ == "__main__":
     )
     print(f"Using device: {device}")
 
-
     # read data
     with open(DATA["input"], 'r', encoding='utf-8') as f:
         text = f.read()
@@ -75,6 +74,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a language model")
     parser.add_argument("--model", type=str, default="TransformerLM", help="Model to train")
     parser.add_argument("--scale", type=bool, default=False, help="Train scaled model")
+    parser.add_argument("--save", type=bool, default=False, help="Save model")
 
     args = parser.parse_args()
 
@@ -98,8 +98,27 @@ if __name__ == "__main__":
     # create model
     model = model_class(**model_config).to(device)
 
+    model_config["scheduler"] = "CyclicLR"
+    model_config["learning_rate"] = PARAMS["base_lr"]
+    model_config["betas"] = PARAMS["betas"]
+    model_config["batch_size"] = PARAMS["batch_size"]
+
     # create a PyTorch optimizer
-    optimizer = AdamW(model.parameters(), lr=PARAMS["learning_rate"])
+    optimizer = AdamW(model.parameters(), lr=PARAMS["base_lr"], betas=PARAMS["betas"])
+    scheduler = CyclicLR(
+        optimizer, base_lr=PARAMS["base_lr"], 
+        max_lr=PARAMS["max_lr"], step_size_up=5, 
+        mode='triangular', cycle_momentum=False
+    )
+
+    # Initialize wandb
+    wandb.login()
+
+    wandb.init(
+        project="myfirstGPT",
+        config=model_config, 
+        name=args.model,
+    )
 
     model.train()
 
@@ -119,12 +138,21 @@ if __name__ == "__main__":
 
         # every once in a while evaluate the loss on train and val sets
         if (iter + 1) % TRAIN["eval_interval"] == 0:
+            model.eval()
             losses = evaluate_loss(
                 train_data, val_data, model, TRAIN["eval_iters"], 
                 PARAMS["context_length"], PARAMS["batch_size"],
                 device
             )
+            # Update learning rate
+            scheduler.step()
+            wandb.log(
+                {
+                    "train_loss": losses["train"], "val_loss": losses["val"],
+                }
+            )
             print(f"step {iter + 1}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+            model.train()
 
     # Inference
     print(f"--- Predicting 100 characters with {args.model} ---")
@@ -136,6 +164,7 @@ if __name__ == "__main__":
     print(pred)
 
     # Save model
-    model_filename = f"{args.model}.pt"
-    model_path = os.path.join(MODEL_DIR, model_filename)
-    torch.save(model.state_dict(), model_path)
+    if args.save:
+        model_filename = f"{args.model}.pt"
+        model_path = os.path.join(MODEL_DIR, model_filename)
+        torch.save(model.state_dict(), model_path)

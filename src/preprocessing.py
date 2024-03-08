@@ -1,7 +1,4 @@
 import torch
-from sklearn.model_selection import train_test_split
-
-from config import DATA
 
 def get_mapper(text):
     """Get encode, mapper, decode mapper, and vocabulary size for a given text.
@@ -48,7 +45,7 @@ def get_batch(data, context_length, batch_size, device):
     y = torch.stack([data[i+1:i+context_length+1] for i in ix]).to(device)
     return x, y
 
-if __name__ == "__main__":
+def get_train_val_data(input_path, train_path, val_path):
     torch.manual_seed(42)
     # Set device
     device = torch.device(
@@ -57,7 +54,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
 
     # read data
-    with open(DATA["input"], 'r', encoding='utf-8') as f:
+    with open(input_path, 'r', encoding='utf-8') as f:
         text = f.read()
 
     # get encode and decode mappers
@@ -69,14 +66,21 @@ if __name__ == "__main__":
     data = torch.tensor(encode(text), dtype=torch.long)
 
     # split the data into train and test
-    train_data, val_data = train_test_split(data, test_size=0.1)
+    n = len(data)
+    train_data = data[:int(0.9 * n)]
+    val_data = data[int(0.9 * n):]
 
     # Example batch
     context_length = 8
     batch_size = 4
     x_train, y_train = get_batch(train_data, context_length, batch_size, device)
-    print(f"Input:\n{x_train}\nTarget:\n{y_train}")
+    print(
+        f"Input (encoded):\n{encode(decode(x_train[0].tolist()))}\n"
+        f"Input (decoded):\n{decode(x_train[0].tolist())}\n" 
+        f"Output (encoded):\n{encode(decode(y_train[0].tolist()))}\n"
+        f"Output (decoded):\n{decode(y_train[0].tolist())}\n" 
+    )
 
     # Save tensors
-    torch.save(train_data, DATA["train"])
-    torch.save(val_data, DATA["val"])
+    torch.save(train_data, train_path)
+    torch.save(val_data, val_path)

@@ -1,17 +1,21 @@
 from pathlib import Path
 
-DATA = {
-    'input': Path('../data/input_data.txt'),
-    'train': Path('../data/train_data.pt'),
-    'val': Path('../data/val_data.pt')
-}
-
 MODEL_DIR = Path('../model')
+DATA_DIR = Path('../data')
+
+DATA = {
+    'input': Path('../data/Drake_lyrics.txt'),
+    'train': Path('../data/train_data.pt'),
+    'val': Path('../data/val_data.pt'),
+    'drake': Path('../data/drake.csv'),
+}
 
 PARAMS = {
     'context_length': 8,
     'batch_size': 32,
-    'learning_rate': 1e-3,
+    'base_lr': 1e-4,
+    'max_lr': 5e-3,
+    'betas': (0.9, 0.999),
     'embedding_dim': 32,
     'head_size': 32,
     'num_heads': 4,
@@ -22,7 +26,9 @@ PARAMS = {
 SCALE_PARAMS = {
     'context_length': 256,
     'batch_size': 64,
-    'learning_rate': 3e-4,
+    'base_lr': 3e-4,
+    'max_lr': 15e-3,
+    'betas': (0.9, 0.999),
     'embedding_dim': 384,
     'head_size': 64,
     'num_heads': 6,
