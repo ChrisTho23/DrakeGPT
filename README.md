@@ -35,9 +35,14 @@ In this repository, the Drake lyrics, included in this [dataset of song lyrics](
 
 1. If not done already, create an account on [kaggle.com](https://www.kaggle.com)
 2. Go to the 'Account' tab of your user profile on the Kaggle website. Click on 'Create New API Token'. This triggers the download of `kaggle.json`, a file containing your API credentials.
-3. Place the `kaggle.json`file with your API credentials somewhere your application can access them.
-3.1 For Kaggle CLI: On Linux, OSX, and other UNIX-based operating systems, place the token at `~/.kaggle/kaggle.json`.On Windows, place it at C:\Users\<Windows-username>\.kaggle\kaggle.json. If the token is not in these directories, the CLI tool will raise an error. So, move the kaggle.json from your Downloads to the appropriate folder.
-3.2 For direct Kaggle API usage: The location of `kaggle.json` is flexible as long as your application can access it at runtime.
+3. Make the credentials in the `kaggle.json`file accessible to your application. This can look like this:
+
+```bash
+mkdir ~/.kaggle
+echo '{"username":"your_username","key":"your_api_key"}' > ~/.kaggle/kaggle.json
+chmod 600 ~/.kaggle/kaggle.json
+```
+
 4. For more details and troubleshooting, visit the [official Kaggle API documentation](https://github.com/Kaggle/kaggle-api#api-credentials).
 
 Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny dataset from Kaggle containing lyrics of Drake song text for model training. Find the data [here](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset).
