@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a language model")
     parser.add_argument("--model", type=str, default="TransformerLM", help="Model to train")
     parser.add_argument("--scale", type=bool, default=False, help="Train scaled model")
-    parser.add_argument("--save", type=bool, default=False, help="Save model")
+    parser.add_argument("--save", type=bool, default=True, help="Save model")
 
     args = parser.parse_args()
 
