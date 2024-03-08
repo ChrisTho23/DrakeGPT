@@ -1,8 +1,11 @@
-# DrakeGPT: A repository to iteratively build and understand generative pre-trained transformer (GPT)
+# DrakeGPT: A Journey Through Generative Pre-trained Transformers on Drake's Lyrics
 
-TODO: Compare model performance; Add quanitzation (1 ternary bit) for final model
+Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. Key highlights include:
 
-This repository contains a collection of language model implementations using PyTorch. It includes models such as BigramLM, SingleHeadAttentionLM, MultiHeadAttentionLM, BlocksLM, ResidualBlocksLM, and TransformerLM, each with unique characteristics and configurations.
+- **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
+- **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to nulti self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (droput, layer normalization).
+- **Performance Comparisons**: Detailed analysis of different model evolutions, showcasing the incremental improvements in processing Drake's lyrical style leveraging the [weights and biases](https://wandb.ai) tool.
+- **Exploring Model Efficiency**: Investigating Microsoft AI's claim on 1.58 bit quantization, with an aim to implement and evaluate quantization on our final model ([BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)).
 
 ## Acknowledgments
 
