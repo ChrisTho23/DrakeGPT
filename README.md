@@ -1,8 +1,10 @@
 # DrakeGPT: A Journey Through Generative Pre-trained Transformers on Drake's Lyrics
 
+do you   drake uh tryna think this whole day you never got it i know we about to get it all and do it though someone else hook i can't really never go the type for me and i know you just saying  what if i die i get it yeah i'm for you just don't want it some bad i don't want you to say someone before you end up lost you and your love for me long there homie i'm still a man what's up  stop off you ain't the type to murd claim we easier of they ain't felt the pressure in a long these women who would have it all come dog   its been to kid not mess with me wanna know if i get it going down like it wrong so i know it's real when do i know it wrong stong 75 im so i don't peach how you leave it   it go right foot up left foot slide basically i'm just tryin' to have it left foot up robin' me in party where you been waiting on me don't know where you been lately don't really give a damn about john did you mmm lately i'm just trying to find another did that you stay to make good on the place with yo
+
 ## Overview
 
-Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. Key highlights include:
+Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. The song lyrics above were actually generated using the best performing version of this model. Key highlights of this repository include:
 
 - **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
 - **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to nulti self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (droput, layer normalization).
@@ -14,6 +16,19 @@ Welcome to DrakeGPT, a focused repository for building a decoder-only generative
 This repository is inspired by Deepmind's [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Andrej Karpathy's [Let's build GPT tutorial](https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7&t=2280s), and Microsoft's [BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)
 
 ## Takeaways
+
+### Model overview 
+This model includes five different models, starting with a simple Bigram Language model to the decoder of a state-of-the-art GPT. Here's an overview of all the models:
+
+| Model Name           | Description                                                   | Key Components                 | Attributes                                   |
+|----------------------|---------------------------------------------------------------|--------------------------------|----------------------------------------------|
+| BigramLM             | Bigram language model. Predicts the next token based on the previous token. | Embedding                      | vocab_size                                   |
+| SingleHeadAttentionLM| Language model with a single self-attention head followed by a feed-forward layer. Predicts the next characters based on attribute-weighted sum of the value embeddings. | Embedding, Single Self-Attention Head, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size |
+| MultiHeadAttentionLM | Language model with multi-head self-attention followed by a feed-forward layer. Similar to SingleHeadAttentionLM but with multiple attention heads. | Embedding, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size, num_heads |
+| BlocksLM             | Language model consisting of multiple sequential blocks, each with multi-head self-attention and a feed-forward layer. | Embedding, Blocks of Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
+| ResidualBlocksLM     | Similar to BlocksLM but with residual connections in each block. | Embedding, Residual Blocks with Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
+| TransformerLM        | Advanced language model with multiple sequential blocks with residual connections. Each block includes multi-head self-attention, feed-forward layers, layer normalization, and dropout. | Embedding, Residual Blocks with Layer Normalization and Dropout, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers, dropout |
+
 
 ![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
 ![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
