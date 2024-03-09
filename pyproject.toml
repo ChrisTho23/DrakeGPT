@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "myfirstgpt"
+name = "DrakeGPT"
 version = "0.1.0"
 description = ""
 authors = ["ChrisTho23 <christophe.thomassin23@gmail.com>"]

@@ -2,6 +2,7 @@ from pathlib import Path
 
 MODEL_DIR = Path('../model')
 DATA_DIR = Path('../data')
+INFERENCE_DIR = Path('../inference')
 
 DATA = {
     'input': Path('../data/Drake_lyrics.txt'),

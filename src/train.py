@@ -4,6 +4,7 @@ import argparse
 import os
 import wandb
 from torch.optim.lr_scheduler import CyclicLR
+from pathlib import Path
 
 from config import DATA, MODEL_DIR, PARAMS, SCALE_PARAMS, TRAIN
 from preprocessing import get_mapper, get_batch
@@ -11,6 +12,51 @@ from model import (
     BigramLM, SingleHeadAttentionLM, MultiHeadAttentionLM, 
     BlocksLM, ResidualBlocksLM, TransformerLM
 )
+
+def build_model(
+    model_name: str, scale: bool, params: dict, scale_params: dict, 
+    vocab_size: int, device: torch.device
+):
+    if scale:
+        params = scale_params
+    # get model class
+    model_class = {
+        "BigramLM": BigramLM,
+        "SingleHeadAttentionLM": SingleHeadAttentionLM,
+        "MultiHeadAttentionLM": MultiHeadAttentionLM,
+        "BlocksLM": BlocksLM,
+        "ResidualBlocksLM": ResidualBlocksLM,
+        "TransformerLM": TransformerLM
+    }.get(model_name)
+    model_config = {
+        "BigramLM": {"vocab_size": vocab_size},
+        "SingleHeadAttentionLM": {
+            "vocab_size": vocab_size, "embedding_dim": params["embedding_dim"], 
+            "context_length": params["context_length"], "head_size": params["head_size"]
+        },
+        "MultiHeadAttentionLM": {
+            "vocab_size": vocab_size, "embedding_dim": params["embedding_dim"], 
+            "context_length": params["context_length"], "head_size": params["head_size"], 
+            "num_heads": params["num_heads"]
+        },
+        "BlocksLM": {
+            "vocab_size": vocab_size, "embedding_dim": params["embedding_dim"], 
+            "context_length": params["context_length"], "num_heads": params["num_heads"], 
+            "num_layers": params["num_layers"],
+        },
+        "ResidualBlocksLM": {
+            "vocab_size": vocab_size, "embedding_dim": params["embedding_dim"], 
+            "context_length": params["context_length"], "num_heads": params["num_heads"], 
+            "num_layers": params["num_layers"],
+        },
+        "TransformerLM": {
+            "vocab_size": vocab_size, "embedding_dim": params["embedding_dim"], 
+            "context_length": params["context_length"], "num_heads": params["num_heads"],
+            "num_layers": params["num_layers"], "dropout": params["dropout"]
+        }, 
+    }.get(model_name)
+    model = model_class(**model_config).to(device) # create model
+    return model, model_config
 
 @torch.no_grad()
 def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch_size, device):
@@ -28,30 +74,13 @@ def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch
             eval_loss["val"] = losses.mean()
     return eval_loss
 
-def get_model_configs(params: dict, vocab_size: int):
-    model_config = {
-        "BigramLM": {"vocab_size": vocab_size},
-        "SingleHeadAttentionLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
-                                 "context_length": params["context_length"], "head_size": params["head_size"]
-        },
-        "MultiHeadAttentionLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
-                                "context_length": params["context_length"], "head_size": params["head_size"],
-                                "num_heads": params["num_heads"]
-        },
-        "BlocksLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
-                    "context_length": params["context_length"], "num_heads": params["num_heads"],
-                    "num_layers": params["num_layers"],
-        },
-        "ResidualBlocksLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
-                            "context_length": params["context_length"], "num_heads": params["num_heads"],
-                            "num_layers": params["num_layers"],
-        },
-        "TransformerLM": {"vocab_size": vocab_size, "embedding_dim": params["embedding_dim"],
-                         "context_length": params["context_length"], "num_heads": params["num_heads"],
-                         "num_layers": params["num_layers"], "dropout": params["dropout"]
-        }, 
-    }
-    return model_config
+def get_model_path(dir: Path, model_name: str, scale: bool):
+    if scale:
+        model_filename = f"{model_name}_scaled.pt"
+    else:
+        model_filename = f"{model_name}.pt"
+    model_path = os.path.join(dir, model_filename)
+    return model_path
 
 if __name__ == "__main__":
     torch.manual_seed(42)
@@ -78,25 +107,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.scale:
-        PARAMS = SCALE_PARAMS
-
-    # get model class
-    model_class = {
-        "BigramLM": BigramLM,
-        "SingleHeadAttentionLM": SingleHeadAttentionLM,
-        "MultiHeadAttentionLM": MultiHeadAttentionLM,
-        "BlocksLM": BlocksLM,
-        "ResidualBlocksLM": ResidualBlocksLM,
-        "TransformerLM": TransformerLM
-    }.get(args.model, TransformerLM)
-
-    # get model config
-    model_configs = get_model_configs(params=PARAMS, vocab_size=vocab_size)
-    model_config = model_configs.get(args.model, model_configs["TransformerLM"])
-
-    # create model
-    model = model_class(**model_config).to(device)
+    model, model_config = build_model(args.model, args.scale, PARAMS, SCALE_PARAMS, vocab_size, device)
 
     model_config["scheduler"] = "CyclicLR"
     model_config["learning_rate"] = PARAMS["base_lr"]
@@ -165,6 +176,5 @@ if __name__ == "__main__":
 
     # Save model
     if args.save:
-        model_filename = f"{args.model}.pt"
-        model_path = os.path.join(MODEL_DIR, model_filename)
+        model_path = get_model_path(MODEL_DIR, args.model, args.scale)
         torch.save(model.state_dict(), model_path)

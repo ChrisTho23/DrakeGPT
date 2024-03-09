@@ -9,6 +9,10 @@ __pycache__/
 # weights and biases
 wandb/
 
+# Inference files
+inference/*
+!inference/.gitkeep
+
 # Data files
 data/*
 !data/.gitkeep

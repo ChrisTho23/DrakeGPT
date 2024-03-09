@@ -1,8 +1,58 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+from collections import OrderedDict
 
 from model_component import Head, MultiHeadAttention, Block, ResidualBlock, ResidualBlock2
+
+def model_params(params: dict, model_type: str, vocab_size: int):
+    """Estimates the number of parameters of the model.
+
+    Args:
+        params_dict (dict): Dictionary containing the parameters of the model.
+        vocab_size (int): Size of the vocabulary.
+
+    Returns:
+        out (int): Number of parameters of the model.
+    """
+    out = OrderedDict()
+
+    # character and position embeddings
+    out["embedding/poisition"] = params["embedding_dim"] * params["context_length"]
+    out["embedding/character"] = params["embedding_dim"] * vocab_size
+
+    # attention blocks
+    out["attention/norm"] = params["embedding_dim"] # no bias
+    out["attention/kqv"] = (params["embedding_dim"]**2) * 3 # since head_size = embedding_dim // num_heads
+    out["attention/proj"] = params["embedding_dim"]**2 # ff layer
+
+    # MLP blocks
+    ffw_size = params["embedding_dim"] * 4
+    out["mlp/norm"] = params["embedding_dim"] # no bias
+    out["mlp/ffw"] = params["embedding_dim"] * ffw_size
+    out["mlp/proj"] = ffw_size * params["embedding_dim"]
+
+    # Block
+    out["block"] = out["attention"] + out["mlp"]
+    out["blocks"] = out["block"] * params["num_layers"]
+
+    # LM head
+    out["lmhead/norm"] = vocab_size # no bias
+    out["lmhead/ffw"] = params["embedding_dim"] * vocab_size
+
+    # calculate total parameters based on model type
+    total_params = out["embedding/character"]
+
+    if model_type in ["SingleHeadAttentionLM", "MultiHeadAttentionLM", "BlocksLM", "ResidualBlocksLM", "TransformerLM"]:
+        total_params += out["embedding/position"] + out["attention/kqv"] + out["lmhead/ffw"]
+
+    if model_type in ["MultiHeadAttentionLM", "BlocksLM", "ResidualBlocksLM", "TransformerLM"]:
+        total_params += (out["mlp/norm"] + out["mlp/ffw"] + out["mlp/proj"]) * params["num_layers"]
+
+    if model_type == "TransformerLM":
+        total_params += params["embedding_dim"]
+
+    return total_params
 
 class BigramLM(nn.Module):
     """Bigram language model. Predicts the next token based on the previous token.
