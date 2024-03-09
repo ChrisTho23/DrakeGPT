@@ -1,5 +1,7 @@
 # DrakeGPT: A Journey Through Generative Pre-trained Transformers on Drake's Lyrics
 
+## Overview
+
 Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. Key highlights include:
 
 - **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
@@ -10,6 +12,11 @@ Welcome to DrakeGPT, a focused repository for building a decoder-only generative
 ## Acknowledgments
 
 This repository is inspired by Deepmind's [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Andrej Karpathy's [Let's build GPT tutorial](https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7&t=2280s), and Microsoft's [BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)
+
+## Takeaways
+
+![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
+![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
 
 ## Getting Started
 
@@ -55,6 +62,8 @@ poetry run python setup.py
 
 ## Usage
 
+### Training
+
 To train a model, run the [train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script with the desired model type. For example to train
 the BigramLM model run:
 
@@ -64,7 +73,6 @@ poetry run python train.py --model BigramLM
 
 Note: After every run of train.py the model will be saved in the [./model](https://github.com/ChrisTho23/myfirstGPT/tree/main/model) folder. By default, all models were trained and can be found in this folder. Running a pre-defined model will overwrite this file.
 
-## Models
 The repository includes the following models:
 
 BigramLM: A simple Bigram language model.
@@ -78,7 +86,9 @@ Each model can be selected using the --model flag when running train.py.
 ## Configuration
 Model configurations are defined in config.py and can be adjusted as needed.
 
-## Saving Models
+### Inference
+
+### Saving Models
 Trained models are automatically saved to the ./models directory. You can change the save directory in the [./src/config.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/config.py).
 
 ## Dependencies
