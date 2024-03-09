@@ -39,15 +39,6 @@ According to these five blocks, six different models were designed and trained. 
 
 This repository is inspired by Deepmind's [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Andrej Karpathy's [Let's build GPT tutorial](https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7&t=2280s), and Microsoft's [BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)
 
-## Results
-
-### Model overview 
-
-This model includes five different models, starting with a simple Bigram Language model to the decoder of a state-of-the-art GPT. Here's an overview of all the models:
-
-![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
-![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
-
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -89,6 +80,30 @@ Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23
 ```bash
 poetry run python setup.py
 ```
+
+## Results
+
+### Training
+
+All models were trained for 10.000 iterations. In each iteration, `batch_size` batches of `context_length`subsequent characters were randomly selected and used for training. Obviously, cross entropy loss is used for updating the model's parameters. Each 500 iterations, thus 20 times per training, the loss on the train and the validation set are evaluated on 200 iterations and logged.
+
+All models have been trained with the same parameters. These parameters were selected as though appropriate according to [Training Compute-Optimal Large Language Models](https://arxiv.org/abs/2203.15556) and [Let's build GPT tutorial](https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7&t=2280s). Parameters are also logged on (weights and biases)[https://wandb.ai].As mentioned before, the last model, `TransformerLM` has also been scaled. Also note that a cyclic learning rate schedule was used for training. Below, one can find the different parameters of the models and their respective values: 
+
+| Parameter        | Description                                            | Default Training Value | Scaled Training Value |
+|------------------|--------------------------------------------------------|-----------------------|----------------------|
+| context_length   | Length of the context window in tokens                 | 8                     | 256                  |
+| batch_size       | Number of samples processed before the model is updated| 32                    | 64                   |
+| base_lr          | Base learning rate for the optimizer                   | 1e-3                  | 3e-4                 |
+| max_lr           | Maximum learning rate for the optimizer                | 5e-3                  | 6e-4                 |
+| betas            | Momentum terms for the Adam optimizer                  | (0.9, 0.95)           | (0.9, 0.95)          |
+| embedding_dim    | Dimension of the token embeddings                      | 32                    | 384                  |
+| head_size        | Dimension of each self-attention head                  | 32                    | 64                   |
+| num_heads        | Number of self-attention heads in each layer           | 4                     | 6                    |
+| num_layers       | Number of layers in the model                          | 3                     | 6                    |
+| dropout          | Dropout rate used in the model                         | 0.1                   | 0.2                  |
+
+![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
+![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
 
 ## Usage
 
