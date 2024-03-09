@@ -18,19 +18,21 @@ def model_params(params: dict, model_type: str, vocab_size: int):
     out = OrderedDict()
 
     # character and position embeddings
-    out["embedding/poisition"] = params["embedding_dim"] * params["context_length"]
+    out["embedding/position"] = params["embedding_dim"] * params["context_length"]
     out["embedding/character"] = params["embedding_dim"] * vocab_size
 
     # attention blocks
     out["attention/norm"] = params["embedding_dim"] # no bias
     out["attention/kqv"] = (params["embedding_dim"]**2) * 3 # since head_size = embedding_dim // num_heads
     out["attention/proj"] = params["embedding_dim"]**2 # ff layer
+    out["attention"] = out["attention/norm"] + out["attention/kqv"] + out["attention/proj"]
 
     # MLP blocks
     ffw_size = params["embedding_dim"] * 4
     out["mlp/norm"] = params["embedding_dim"] # no bias
     out["mlp/ffw"] = params["embedding_dim"] * ffw_size
     out["mlp/proj"] = ffw_size * params["embedding_dim"]
+    out["mlp"] = out["mlp/norm"] + out["mlp/ffw"] + out["mlp/proj"]
 
     # Block
     out["block"] = out["attention"] + out["mlp"]
@@ -44,13 +46,19 @@ def model_params(params: dict, model_type: str, vocab_size: int):
     total_params = out["embedding/character"]
 
     if model_type in ["SingleHeadAttentionLM", "MultiHeadAttentionLM", "BlocksLM", "ResidualBlocksLM", "TransformerLM"]:
-        total_params += out["embedding/position"] + out["attention/kqv"] + out["lmhead/ffw"]
+        total_params += (out["embedding/position"] + out["attention/kqv"] + out["lmhead/ffw"])
 
-    if model_type in ["MultiHeadAttentionLM", "BlocksLM", "ResidualBlocksLM", "TransformerLM"]:
-        total_params += (out["mlp/norm"] + out["mlp/ffw"] + out["mlp/proj"]) * params["num_layers"]
+    if model_type in ["SingleHeadAttentionLM", "MultiHeadAttentionLM"]:
+        total_params += (out["embedding/position"] + out["lmhead/ffw"])
+
+    if model_type == "BlocksLM":
+        total_params += ((out["attention/kqv"] + out["mlp/ffw"]) * params["num_layers"])
+
+    if model_type == "ResidualBlocksLM":
+        total_params += ((out["attention/kqv"] + out["mlp/ffw"] + out["mlp/proj"]) * params["num_layers"])
 
     if model_type == "TransformerLM":
-        total_params += params["embedding_dim"]
+        total_params += (out["blocks"] + out["lmhead/norm"])
 
     return total_params
 

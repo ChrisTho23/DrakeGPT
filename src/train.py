@@ -10,7 +10,7 @@ from config import DATA, MODEL_DIR, PARAMS, SCALE_PARAMS, TRAIN
 from preprocessing import get_mapper, get_batch
 from model import (
     BigramLM, SingleHeadAttentionLM, MultiHeadAttentionLM, 
-    BlocksLM, ResidualBlocksLM, TransformerLM
+    BlocksLM, ResidualBlocksLM, TransformerLM, model_params
 )
 
 def build_model(
@@ -56,7 +56,7 @@ def build_model(
         }, 
     }.get(model_name)
     model = model_class(**model_config).to(device) # create model
-    return model, model_config
+    return model, model_config, params
 
 @torch.no_grad()
 def evaluate_loss(train_data, val_data, model, eval_iters, context_length, batch_size, device):
@@ -107,7 +107,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    model, model_config = build_model(args.model, args.scale, PARAMS, SCALE_PARAMS, vocab_size, device)
+    model, model_config, params = build_model(args.model, args.scale, PARAMS, SCALE_PARAMS, vocab_size, device)
+
+    num_params = model_params(params, args.model, vocab_size)
+    print(f"Selected {args.model} model for training. Model has {num_params} parameters.")
 
     model_config["scheduler"] = "CyclicLR"
     model_config["learning_rate"] = PARAMS["base_lr"]
