@@ -5,7 +5,14 @@
 
 ## Overview & Motivation
 
-Welcome to DrakeGPT, a repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using a dataset of lyrics of song by the artist Drake. The song lyrics above were actually generated using the best-performing version of this model. This repository is motivated by the thought of iteratively building a GPT according to the original [Attention Is All You Need](https://arxiv.org/abs/1706.03762) paper which is depicted below. As we aim to understand only the text generation process of such a model, we will only focus on the decoder of this architecture and ignore the encoder and the cross-attention block in the decoder. 
+This repository includes:
+
+- **GPT trained on Drake Lyrics**: A state-of-the-art GPT trained Drake's song lyrics.
+- **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to multi self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (dropout, layer normalization).
+- **Performance Comparisons**: Detailed analysis of different model evolutions, showcasing the incremental improvements in processing Drake's lyrical style leveraging the [weights and biases](https://wandb.ai) tool.
+- **Exploring Model Efficiency**: Investigating Microsoft AI's claim on 1.58 bit quantization, with an aim to implement and evaluate quantization on our final model ([BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)).
+
+Welcome to DrakeGPT, a repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using a dataset of lyrics of songs by the artist Drake. The song lyrics above were actually generated using the best-performing version of this model. This repository is motivated by the thought of iteratively building a GPT according to the original [Attention Is All You Need](https://arxiv.org/abs/1706.03762) paper which is depicted below. As we aim to understand only the text generation process of such a model, we will only focus on the decoder of this architecture and ignore the encoder and the cross-attention block in the decoder. 
 ![attention_is_all_you_need](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/32f867e7-7d1f-4952-86d1-78858ee064eb) <br>
 As one can see, the decoder is composed of multiple components. First, the input tokens and their positions are embedded. Second, the embeddings are fed into a block consisting of a multi-head self-attention block followed by a feed-forward network (as mentioned above, we ignore the multi-head cross-attention block at this point). Both components in this block feature layer normalization at the output and a residual connection that is added to the output of the block. Finally, the output of the block passes through a feed-forward layer after which softmax is applied to obtain the output sequence. This architecture contains 5 key components:
 
@@ -15,9 +22,9 @@ As one can see, the decoder is composed of multiple components. First, the input
 | **MultiHeadAttention** | Consists of multiple self-attention heads. Each head attends to different parts of the input, allowing the model to capture various features and dependencies.    | num_heads, head_size, embedding_dim, context_length   |
 | **Block**           | A transformer block that combines a multi-head self-attention layer and a feed-forward layer, applied sequentially to the input. It forms the basic building block of the GPT model. | embedding_dim, context_length, num_heads             |
 | **ResidualBlock**   | Similar to a regular block but includes residual connections. It allows the flow of information from earlier layers directly to later layers, aiding in training deeper networks.  | embedding_dim, num_heads, context_length             |
-| **FeedForward**     | A simple neural network consisting of one or more fully-connected layer. It's used within transformer blocks to process the output of the attention layers and of the blocks. The final feed forward layer, the Language Model head, is followed by a ReLU activation  | embedding_dim                                        |
+| **FeedForward**     | A simple neural network consisting of one or more fully connected layer. It's used within transformer blocks to process the output of the attention layers and of the blocks. The final feed-forward layer, the Language Model head, is followed by a ReLU activation  | embedding_dim                                        |
 
-According to these five blocks, six different models where designed and trained. Note that the last model is identical to the 5th model but includes some ML optimization heuristics such as layer normalization and dropout to prevent overfitting as this last model was trained at scale. Here is an overview of the different model:
+According to these five blocks, six different models were designed and trained. Note that the last model is identical to the 5th model but includes some ML optimization heuristics such as layer normalization and dropout to prevent overfitting as this last model was trained at scale. Here is an overview of the different models:
 
 | Model Name           | Description                                                   | Components                 | Attributes                                   |
 |----------------------|---------------------------------------------------------------|--------------------------------|----------------------------------------------|
@@ -25,15 +32,8 @@ According to these five blocks, six different models where designed and trained.
 | SingleHeadAttentionLM| Language model with a single self-attention head followed by a feed-forward layer. Predicts the next characters based on attribute-weighted sum of the value embeddings. | Embedding, Single Self-Attention Head, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size |
 | MultiHeadAttentionLM | Language model with multi-head self-attention followed by a feed-forward layer. Similar to SingleHeadAttentionLM but with multiple attention heads. | Embedding, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size, num_heads |
 | BlocksLM             | Language model consisting of multiple sequential blocks, each with multi-head self-attention and a feed-forward layer. | Embedding, Blocks of Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
-| ResidualBlocksLM     | Similar to BlocksLM but with residual connections in each block. In this model the feed-forward layer to 'project' the output of the self-attention heads via a linear transformation were added for the first time. | Embedding, Residual Blocks with Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
+| ResidualBlocksLM     | Similar to BlocksLM but with residual connections in each block. In this model, the feed-forward layer to 'project' the output of the self-attention heads via a linear transformation was added for the first time. | Embedding, Residual Blocks with Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
 | TransformerLM        | Advanced language model with multiple sequential blocks with residual connections. Each block includes multi-head self-attention, feed-forward layers, layer normalization, and dropout. | Embedding, Residual Blocks with Layer Normalization and Dropout, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers, dropout |
-
-Key highlights of this repository include:
-
-- **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
-- **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to nulti self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (droput, layer normalization).
-- **Performance Comparisons**: Detailed analysis of different model evolutions, showcasing the incremental improvements in processing Drake's lyrical style leveraging the [weights and biases](https://wandb.ai) tool.
-- **Exploring Model Efficiency**: Investigating Microsoft AI's claim on 1.58 bit quantization, with an aim to implement and evaluate quantization on our final model ([BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)).
 
 ## Acknowledgments
 
