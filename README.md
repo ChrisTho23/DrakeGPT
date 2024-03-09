@@ -1,8 +1,11 @@
-# myfirstGPT: A repository to iteratively build and understand generative pre-trained transformer (GPT)
+# DrakeGPT: A Journey Through Generative Pre-trained Transformers on Drake's Lyrics
 
-TODO: Compare model performance; Add quanitzation (1 ternary bit) for final model
+Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. Key highlights include:
 
-This repository contains a collection of language model implementations using PyTorch. It includes models such as BigramLM, SingleHeadAttentionLM, MultiHeadAttentionLM, BlocksLM, ResidualBlocksLM, and TransformerLM, each with unique characteristics and configurations.
+- **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
+- **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to nulti self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (droput, layer normalization).
+- **Performance Comparisons**: Detailed analysis of different model evolutions, showcasing the incremental improvements in processing Drake's lyrical style leveraging the [weights and biases](https://wandb.ai) tool.
+- **Exploring Model Efficiency**: Investigating Microsoft AI's claim on 1.58 bit quantization, with an aim to implement and evaluate quantization on our final model ([BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)).
 
 ## Acknowledgments
 
@@ -12,13 +15,13 @@ This repository is inspired by Deepmind's [Attention Is All You Need](https://ar
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-Prerequisites
+### Prerequisites
 The project is built using Python and PyTorch. We use Poetry for dependency management. 
 
 First, you will have to clone the repository locally.
 ```bash
-git clone https://github.com/ChrisTho23/myfirstGPT
-cd myfirstGPT
+git clone https://github.com/ChrisTho23/DrakeGPT
+cd DrakeGPT
 ```
 
 Then, install dependencies using Poetry:
@@ -26,15 +29,33 @@ Then, install dependencies using Poetry:
 poetry install
 ```
 
-Finally, you will have to run the [./src/data.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/data.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder. We use a tiny
-dataset containing Shakespearean text for the model training. Find the data [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt)
+All following scripts will have to be run from the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) folder to make sure the relative paths defined in [./src/config.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/config.py) work correctly. Access the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) file like so:
 ```bash
-poetry run python data.py
+cd src/
+```
+
+In this repository, the Drake lyrics, included in this [dataset of song lyrics](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset) that have been uploaded to Kaggle, are used. Thus, we need to access Kaggle’s public API to download the dataset. For this, one needs to authenticate in Kaggle using an API token. If you have not done so, follow these steps to authenticate: 
+
+1. If not done already, create an account on [kaggle.com](https://www.kaggle.com)
+2. Go to the 'Account' tab of your user profile on the Kaggle website. Click on 'Create New API Token'. This triggers the download of `kaggle.json`, a file containing your API credentials.
+3. Make the credentials in the `kaggle.json`file accessible to your application. This can look like this:
+
+```bash
+mkdir ~/.kaggle
+echo '{"username":"your_username","key":"your_api_key"}' > ~/.kaggle/kaggle.json
+chmod 600 ~/.kaggle/kaggle.json
+```
+
+4. For more details and troubleshooting, visit the [official Kaggle API documentation](https://github.com/Kaggle/kaggle-api#api-credentials).
+
+Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny dataset from Kaggle containing lyrics of Drake song text for model training. Find the data [here](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset).
+```bash
+poetry run python setup.py
 ```
 
 ## Usage
 
-To train a model, run the [train.py]() script with the desired model type. For example to train
+To train a model, run the [train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script with the desired model type. For example to train
 the BigramLM model run:
 
 ```bash

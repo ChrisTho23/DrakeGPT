@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# weights and biases
+wandb/
+
+# Inference files
+inference/*
+!inference/.gitkeep
+
 # Data files
 data/*
 !data/.gitkeep
