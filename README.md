@@ -16,6 +16,17 @@ As one can see, the decoder is composed of multiple components. First, the input
 | **ResidualBlock**   | Similar to a regular block but includes residual connections. It allows the flow of information from earlier layers directly to later layers, aiding in training deeper networks.  | embedding_dim, num_heads, context_length             |
 | **FeedForward**     | A simple neural network consisting of a fully-connected layer followed by a ReLU activation. It's used within transformer blocks to process the output of the attention layers. | embedding_dim                                        |
 
+According to these five blocks, six different models where designed and trained. Note that the last model is identical to the 5th model but includes some ML optimization heuristics such as layer normalization and dropout to prevent overfitting as this last model was trained on scale. Here is an overview of the different model:
+
+| Model Name           | Description                                                   | Key Components                 | Attributes                                   |
+|----------------------|---------------------------------------------------------------|--------------------------------|----------------------------------------------|
+| BigramLM             | Bigram language model. Predicts the next token based on the previous token. | Embedding                      | vocab_size                                   |
+| SingleHeadAttentionLM| Language model with a single self-attention head followed by a feed-forward layer. Predicts the next characters based on attribute-weighted sum of the value embeddings. | Embedding, Single Self-Attention Head, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size |
+| MultiHeadAttentionLM | Language model with multi-head self-attention followed by a feed-forward layer. Similar to SingleHeadAttentionLM but with multiple attention heads. | Embedding, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size, num_heads |
+| BlocksLM             | Language model consisting of multiple sequential blocks, each with multi-head self-attention and a feed-forward layer. | Embedding, Blocks of Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
+| ResidualBlocksLM     | Similar to BlocksLM but with residual connections in each block. | Embedding, Residual Blocks with Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
+| TransformerLM        | Advanced language model with multiple sequential blocks with residual connections. Each block includes multi-head self-attention, feed-forward layers, layer normalization, and dropout. | Embedding, Residual Blocks with Layer Normalization and Dropout, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers, dropout |
+
 Key highlights of this repository include:
 
 - **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
@@ -32,16 +43,6 @@ This repository is inspired by Deepmind's [Attention Is All You Need](https://ar
 ### Model overview 
 
 This model includes five different models, starting with a simple Bigram Language model to the decoder of a state-of-the-art GPT. Here's an overview of all the models:
-
-| Model Name           | Description                                                   | Key Components                 | Attributes                                   |
-|----------------------|---------------------------------------------------------------|--------------------------------|----------------------------------------------|
-| BigramLM             | Bigram language model. Predicts the next token based on the previous token. | Embedding                      | vocab_size                                   |
-| SingleHeadAttentionLM| Language model with a single self-attention head followed by a feed-forward layer. Predicts the next characters based on attribute-weighted sum of the value embeddings. | Embedding, Single Self-Attention Head, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size |
-| MultiHeadAttentionLM | Language model with multi-head self-attention followed by a feed-forward layer. Similar to SingleHeadAttentionLM but with multiple attention heads. | Embedding, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, head_size, num_heads |
-| BlocksLM             | Language model consisting of multiple sequential blocks, each with multi-head self-attention and a feed-forward layer. | Embedding, Blocks of Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
-| ResidualBlocksLM     | Similar to BlocksLM but with residual connections in each block. | Embedding, Residual Blocks with Multi-Head Self-Attention and Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers |
-| TransformerLM        | Advanced language model with multiple sequential blocks with residual connections. Each block includes multi-head self-attention, feed-forward layers, layer normalization, and dropout. | Embedding, Residual Blocks with Layer Normalization and Dropout, Multi-Head Self-Attention, Feed-Forward Layer | vocab_size, embedding_dim, context_length, num_heads, num_layers, dropout |
-
 
 ![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
 ![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
