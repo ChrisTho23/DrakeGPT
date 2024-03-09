@@ -2,9 +2,21 @@
 
 do you   drake uh tryna think this whole day you never got it i know we about to get it all and do it though someone else hook i can't really never go the type for me and i know you just saying  what if i die i get it yeah i'm for you just don't want it some bad i don't want you to say someone before you end up lost you and your love for me long there homie i'm still a man what's up  stop off you ain't the type to murd claim we easier of they ain't felt the pressure in a long these women who would have it all come dog   its been to kid not mess with me wanna know if i get it going down like it wrong so i know it's real when do i know it wrong stong 75 im so i don't peach how you leave it   it go right foot up left foot slide basically i'm just tryin' to have it left foot up robin' me in party where you been waiting on me don't know where you been lately don't really give a damn about john did you mmm lately i'm just trying to find another did that you stay to make good on the place with yo
 
-## Overview
+## Overview & Motivation
 
-Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. The song lyrics above were actually generated using the best performing version of this model. Key highlights of this repository include:
+Welcome to DrakeGPT, a focused repository for building a decoder-only generative pre-trained transformer (GPT) with PyTorch, using the unique dataset of Drake's complete lyrics. The song lyrics above were actually generated using the best performing version of this model. This repository is motivated by the thought of iteratively building a GPT according to the original [Attention Is All You Need](https://arxiv.org/abs/1706.03762) paper which is depicted below. As we aim to understand only the text generation process of such a model, we will only focus on the decoder of this architecture and ignore the encoder and the cross-attention block in the decoder. 
+![attention_is_all_you_need](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/32f867e7-7d1f-4952-86d1-78858ee064eb)
+As one can see, the decoder is composed of multiple components. First, the input token's and there possition are embedded. Second, the embeddings are fed into a block consisting of a multi-head self-attention block followed by a feed-forward network (as mentioned above, we ignore the multi-head cross-attention block at this point). Both components in this block feature lyer normalization at the output and a residual connection that is added to the output of the block. Finally, the output of the block is passing through a feed-forward layer after which softmax is applied to obtain the output sequence. This architecture contains 5 key components:
+
+| Component           | Description                                                                                                                                                         | Parameters                                            |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| **SingleHead**            | A single self-attention head that learns key, query, and value matrices to attend to different parts of the input. Uses dot-product attention.                        | head_size, embedding_dim, context_length              |
+| **MultiHeadAttention** | Consists of multiple self-attention heads. Each head attends to different parts of the input, allowing the model to capture various features and dependencies.    | num_heads, head_size, embedding_dim, context_length   |
+| **Block**           | A transformer block that combines a multi-head self-attention layer and a feed-forward layer, applied sequentially to the input. It forms the basic building block of the GPT model. | embedding_dim, context_length, num_heads             |
+| **ResidualBlock**   | Similar to a regular block but includes residual connections. It allows the flow of information from earlier layers directly to later layers, aiding in training deeper networks.  | embedding_dim, num_heads, context_length             |
+| **FeedForward**     | A simple neural network consisting of a fully-connected layer followed by a ReLU activation. It's used within transformer blocks to process the output of the attention layers. | embedding_dim                                        |
+
+Key highlights of this repository include:
 
 - **Drake's Lyrics as a Dataset**: All models are trained on the extensive collection of Drake's song lyrics.
 - **Progressive Model Development**: Starting from basic components like single self-attention head, advancing to nulti self-attention heads, feed-forward layers, residual connections, and ML optimization techniques (droput, layer normalization).
@@ -15,9 +27,10 @@ Welcome to DrakeGPT, a focused repository for building a decoder-only generative
 
 This repository is inspired by Deepmind's [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Andrej Karpathy's [Let's build GPT tutorial](https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7&t=2280s), and Microsoft's [BitNet: Scaling 1-bit Transformers for Large Language Models](https://arxiv.org/abs/2310.11453)
 
-## Takeaways
+## Results
 
 ### Model overview 
+
 This model includes five different models, starting with a simple Bigram Language model to the decoder of a state-of-the-art GPT. Here's an overview of all the models:
 
 | Model Name           | Description                                                   | Key Components                 | Attributes                                   |
