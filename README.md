@@ -102,6 +102,7 @@ All models have been trained with the same parameters. These parameters were sel
 | num_layers       | Number of layers in the model                          | 3                     | 6                    |
 | dropout          | Dropout rate used in the model                         | 0.1                   | 0.2                  |
 
+Below, one can find the evolution of the training and the validation loss of the 20 epochs of training for the relevant methods. Here, only the `TransformerLM` training at scale is displayed to prevent misunderstandings.  
 ![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
 ![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
 
