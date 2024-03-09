@@ -17,7 +17,7 @@ As one can see, the decoder is composed of multiple components. First, the input
 | **ResidualBlock**   | Similar to a regular block but includes residual connections. It allows the flow of information from earlier layers directly to later layers, aiding in training deeper networks.  | embedding_dim, num_heads, context_length             |
 | **FeedForward**     | A simple neural network consisting of one or more fully-connected layer. It's used within transformer blocks to process the output of the attention layers and of the blocks. The final feed forward layer, the Language Model head, is followed by a ReLU activation  | embedding_dim                                        |
 
-According to these five blocks, six different models where designed and trained. Note that the last model is identical to the 5th model but includes some ML optimization heuristics such as layer normalization and dropout to prevent overfitting as this last model was trained on scale. Here is an overview of the different model:
+According to these five blocks, six different models where designed and trained. Note that the last model is identical to the 5th model but includes some ML optimization heuristics such as layer normalization and dropout to prevent overfitting as this last model was trained at scale. Here is an overview of the different model:
 
 | Model Name           | Description                                                   | Key Components                 | Attributes                                   |
 |----------------------|---------------------------------------------------------------|--------------------------------|----------------------------------------------|
