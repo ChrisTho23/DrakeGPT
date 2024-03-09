@@ -115,7 +115,7 @@ if __name__ == "__main__":
     wandb.login()
 
     wandb.init(
-        project="myfirstGPT",
+        project="DrakeGPT",
         config=model_config, 
         name=args.model,
     )
