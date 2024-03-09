@@ -1,5 +1,7 @@
 # DrakeGPT: A Journey Through Generative Pre-trained Transformers on Drake's Lyrics
 
+TODO: Quantization, Calculate model parameters
+
 "do you   drake uh tryna think this whole day you never got it i know we about to get it all and do it though someone else hook i can't really never go the type for me and i know you just saying  what if i die i get it yeah i'm for you just don't want it some bad i don't want you to say someone before you end up lost you and your love for me long there homie i'm still a man what's up  stop off you ain't the type to murd claim we easier of they ain't felt the pressure in a long these women who would have it all come dog   its been to kid not mess with me wanna know if i get it going down like it wrong so i know it's real when do i know it wrong stong 75 im so i don't peach how you leave it   it go right foot up left foot slide basically i'm just tryin' to have it left foot up robin' me in party where you been waiting on me don't know where you been lately don't really give a damn about john did you mmm lately i'm just trying to find another did that you stay to make good on the place with yo"<br>
 -- DrakeGPT (2024)
 
@@ -104,38 +106,38 @@ All models have been trained with the same parameters. These parameters were sel
 
 Below, one can find the evolution of the training and the validation loss of the 20 epochs of training for the relevant methods. Here, only the `TransformerLM` training at scale is displayed to prevent misunderstandings.  
 ![drakegpt_train_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/f1f7d06d-ff53-4de5-979c-8a549cebc975)
+As expected, the training loss of the models lowers every time another component of the GPT architecture is added. In terms of convergence speed, the `ResidualBlocksLM` model seems to stabilize more quickly than others, indicating efficient learning due to residual connections.  The scaled `TransformerLM` stands out with significantly lower loss values. On the training dataset, the final loss is 1.35 points lower than the next best model. This means the performs is approximately 4.85 times better considering the logarithmic scale.<br>
+Next, the validation loss is depicted:
 ![drakegpt_val_loss](https://github.com/ChrisTho23/DrakeGPT/assets/110739558/afd2f91c-fec9-4712-bd27-2e2cc3ea8ac3)
+While we can observe similar trends, overfitting proves a concern with some of the models, as indicated by their training loss continuing to decrease while their validation loss plateaus or increases. This calls for regulaization or further optimization techniques such as:
+- Early stopping with a patience parameter: Training will be halted number of evaluation steps with no improvement. 
+- Learning rate adjustments: A decay factor could be applied. For example, reduce the learning rate by 10% every 1000 steps, or when the validation loss plateaus.
+- Increasing dropout rates: If the current dropout rate is 0.1, raising it to 0.2 or 0.3 might be tested to see how it affects overfitting.
 
 ## Usage
 
 ### Training
 
-To train a model, run the [train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script with the desired model type. For example to train
+To train a model, run the [src/train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/train.py) script with the desired model type. For example to train
 the BigramLM model run:
 
 ```bash
 poetry run python train.py --model BigramLM
 ```
 
-Note: After every run of train.py the model will be saved in the [./model](https://github.com/ChrisTho23/myfirstGPT/tree/main/model) folder. By default, all models were trained and can be found in this folder. Running a pre-defined model will overwrite this file.
-
-The repository includes the following models:
-
-BigramLM: A simple Bigram language model.
-SingleHeadAttentionLM: A language model using single-head self-attention.
-MultiHeadAttentionLM: Similar to SingleHeadAttentionLM, but with multi-head attention.
-BlocksLM: A language model consisting of sequential blocks with multi-head self-attention.
-ResidualBlocksLM: Similar to BlocksLM but with residual connections.
-TransformerLM: An advanced model utilizing multiple Transformer blocks.
-Each model can be selected using the --model flag when running train.py.
-
-## Configuration
-Model configurations are defined in config.py and can be adjusted as needed.
+Note: After every run of train.py the model will be saved in the [./model](https://github.com/ChrisTho23/myfirstGPT/tree/main/model.py) folder. By default, all models were trained and can be found in this folder. Running a pre-defined model will overwrite this file.
 
 ### Inference
 
-### Saving Models
-Trained models are automatically saved to the ./models directory. You can change the save directory in the [./src/config.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/config.py).
+To run inference on a model, run the [src/inference.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/inference.py) script with the desired model type. 
+
+```bash
+poetry run python inference.py --model <ModelName> --scale <True/False> --length <NumCharacters>
+```
+
+Replace `<ModelName>` with the name of the model you wish to use for inference (e.g., `TransformerLM`). Set `--scale` to `True` if you want to use the scaled version of the model or `False` otherwise. Replace `<NumCharacters>` with the number of characters you want the model to generate.
+
+After the script runs, the generated text will be printed to the console and saved to a file within the `./inference` directory. The file will be named with the model, the current date, and time to ensure uniqueness, like `generation_TransformerLM_scaled_YYYYMMDD_HHMM.txt`.
 
 ## Dependencies
 Dependencies are managed with Poetry. To add or update dependencies, use Poetry's dependency management commands.
