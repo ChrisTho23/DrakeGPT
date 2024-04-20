@@ -56,7 +56,7 @@ Then, install dependencies using Poetry:
 poetry install
 ```
 
-All following scripts will have to be run from the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) folder to make sure the relative paths defined in [./src/config.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/config.py) work correctly. Access the [./src](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/) file like so:
+All following scripts will have to be run from the [./src](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/) folder to make sure the relative paths defined in [./src/config.py](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/config.py) work correctly. Access the [./src](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/) file like so:
 ```bash
 cd src/
 ```
@@ -75,7 +75,7 @@ chmod 600 ~/.kaggle/kaggle.json
 
 4. For more details and troubleshooting, visit the [official Kaggle API documentation](https://github.com/Kaggle/kaggle-api#api-credentials).
 
-Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/setup.py) script to load the data in the [./data](https://github.com/ChrisTho23/myfirstGPT/tree/main/data) folder and create a train and a test data set. We use a tiny dataset from Kaggle containing lyrics of Drake song text for model training. Find the data [here](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset).
+Finally, you will have to run the [./src/setup.py](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/setup.py) script to load the data in the [./data](https://github.com/ChrisTho23/DrakeGPT/tree/main/data) folder and create a train and a test data set. We use a tiny dataset from Kaggle containing lyrics of Drake song text for model training. Find the data [here](https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset).
 ```bash
 poetry run python setup.py
 ```
@@ -115,18 +115,18 @@ While we can observe similar trends, overfitting proves a concern with some of t
 
 ### Training
 
-To train a model, run the [src/train.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/train.py) script with the desired model type. For example to train
+To train a model, run the [src/train.py](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/train.py) script with the desired model type. For example to train
 the BigramLM model run:
 
 ```bash
 poetry run python train.py --model BigramLM
 ```
 
-Note: After every run of train.py the model will be saved in the [./model](https://github.com/ChrisTho23/myfirstGPT/tree/main/model.py) folder. By default, all models were trained and can be found in this folder. Running a pre-defined model will overwrite this file.
+Note: After every run of train.py the model will be saved in the [./model](https://github.com/ChrisTho23/DrakeGPT/tree/main/model.py) folder. By default, all models were trained and can be found in this folder. Running a pre-defined model will overwrite this file.
 
 ### Inference
 
-To run inference on a model, run the [src/inference.py](https://github.com/ChrisTho23/myfirstGPT/tree/main/src/inference.py) script with the desired model type. 
+To run inference on a model, run the [src/inference.py](https://github.com/ChrisTho23/DrakeGPT/tree/main/src/inference.py) script with the desired model type. 
 
 ```bash
 poetry run python inference.py --model <ModelName> --scale <True/False> --length <NumCharacters>
